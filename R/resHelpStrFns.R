@@ -348,7 +348,7 @@ fpStr <- function (param, modObj, asEqn=NULL, digits=NULL, dfDigits=NULL) {
   pstr <- pStr(param, modObj, asEqn=F, pDigits)
   
   if (asEqn) {
-    str <- paste0('$', fstr, ',', pstr, '$')
+    str <- paste0('$', fstr, '$, $', pstr, '$')
   } else {
     str <- paste0(fstr, ', ', pstr)
   }
@@ -373,7 +373,7 @@ tpStr <- function (param, modObj, asEqn=NULL, ...) {
   pstr <- pStr(param, modObj, asEqn=F, pdigits=pdigits)
   
   if (asEqn) {
-    str <- paste0('$', tstr, ',', pstr, '$')
+    str <- paste0('$', tstr, '$, $', pstr, '$')
   } else {
     str <- paste0(tstr, ', ', pstr)
   }
