@@ -4,7 +4,7 @@
 \alias{pStr}
 \title{Constructs an APA formatted string for a p-value.}
 \usage{
-pStr(param, modObj, ...)
+pStr(param, modObj, asEqn = NULL, pDigits = NULL)
 }
 \arguments{
 \item{param}{The parameter of interest. Can be "total" for the omnibus

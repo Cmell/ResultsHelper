@@ -4,11 +4,9 @@
 \alias{sdStr}
 \title{Prints an APA formatted sd.}
 \usage{
-sdStr(param, v, na.rm = F, digits = NULL, asEqn = NULL)
+sdStr(v, na.rm = F, digits = NULL, asEqn = NULL)
 }
 \arguments{
-\item{param}{The parameter of interest.}
-
 \item{v}{Either a mean value or a vector. If a vector, then \code{sd()} 
 is called on it.}
 

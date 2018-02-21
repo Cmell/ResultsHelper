@@ -5,7 +5,7 @@
 \title{Prints an APA formated string of the form:
 \code{F(df1,df2),p[=,<]pval}.}
 \usage{
-fpStr(param, modObj, asEqn = NULL, ...)
+fpStr(param, modObj, asEqn = NULL, digits = NULL, dfDigits = NULL)
 }
 \arguments{
 \item{param}{The parameter of interest. The shortcut "int" is recognized
