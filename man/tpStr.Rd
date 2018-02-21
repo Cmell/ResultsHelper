@@ -13,6 +13,8 @@ tpStr(param, modObj, asEqn = NULL, ...)
 \item{modObj}{The \code{lm} or \code{summary.lm} object.}
 
 \item{asEqn}{Should output be a markdown equation?}
+
+\item{...}{Other options.}
 }
 \description{
 Prints an APA formated string of the form:

@@ -337,7 +337,7 @@ fpStr <- function (param, modObj, asEqn=NULL, digits=NULL, dfDigits=NULL) {
   #' as well as the "total" term.
   #' @param modObj The \code{lm} or \code{summary.lm} object.
   #' @param asEqn Should output be a markdown equation?
-  #' @ ... Other options.
+  #' @param ... Other options.
   #' 
   #' @export fpStr
   
@@ -363,7 +363,7 @@ tpStr <- function (param, modObj, asEqn=NULL, ...) {
   #' @param param The parameter of interest. The shortcut "int" is recognized.
   #' @param modObj The \code{lm} or \code{summary.lm} object.
   #' @param asEqn Should output be a markdown equation?
-  #' @ ... Other options.
+  #' @param ... Other options.
   #' 
   #' @export tpStr
   

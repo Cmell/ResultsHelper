@@ -25,7 +25,6 @@ saveAllModelObjects <- function (file, envir=".GlobalEnv", objClass="lm", ...) {
                                   return(objClass %in% c(curClass))
                                   })]
   
-  browser()
   save(list = modObjNms, 
        envir = envir, 
        file = file)
