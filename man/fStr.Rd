@@ -4,7 +4,7 @@
 \alias{fStr}
 \title{Constructs an APA formatted string for an F value.}
 \usage{
-fStr(param, modObj, digits = NULL, asEqn = NULL, dfDigits = NULL)
+fStr(param, modObj, ...)
 }
 \arguments{
 \item{param}{The parameter of interest. Can be "total" for the omnibus

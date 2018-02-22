@@ -4,11 +4,15 @@
 \alias{getOpts}
 \title{A way to quickly get options for functions.}
 \usage{
-getOpts(arguments = NULL)
+getOpts(arguments = NULL, ...)
 }
 \arguments{
-\item{arguments}{A character vector of arguments to access. Otherwise,
+\item{arguments}{A character vector of arguments to access. If NULL,
 the function processes all available arguments.}
+
+\item{...}{Arguments that override the defaults. If an argument is provided
+via ellipses from a caller function, these are assigned the provided value 
+instead of the default value.}
 }
 \description{
 A way to quickly get options for functions.

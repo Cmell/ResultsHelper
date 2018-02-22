@@ -4,7 +4,7 @@
 \alias{tStr}
 \title{Constructs an APA formatted string for a t-value.}
 \usage{
-tStr(param, modObj, digits = NULL, dfDigits = NULL)
+tStr(param, modObj, ...)
 }
 \arguments{
 \item{param}{The parameter of interest. Can be "int" as a shortcut 
