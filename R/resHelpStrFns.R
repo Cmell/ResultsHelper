@@ -266,7 +266,7 @@ mStr <- function (v, na.rm=F, ...) {
   }
   
   # Make a string!
-  str <- paste0('M=', formatC(mn, digits=digits), format='f')
+  str <- paste0('M=', formatC(mn, digits=digits, format='f'))
   
   if (asEqn) {
     str <- paste0('$', str, '$')
