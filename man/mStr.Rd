@@ -4,7 +4,7 @@
 \alias{mStr}
 \title{Prints an APA formatted mean.}
 \usage{
-mStr(v, na.rm = F, digits = NULL, asEqn = NULL)
+mStr(v, na.rm = F, ...)
 }
 \arguments{
 \item{v}{Either a mean value or a vector. If a vector, then \code{mean()} 

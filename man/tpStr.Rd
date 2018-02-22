@@ -5,16 +5,16 @@
 \title{Prints an APA formated string of the form:
 \code{t(df),p[=,<]pval}.}
 \usage{
-tpStr(param, modObj, asEqn = NULL, ...)
+tpStr(param, modObj, ...)
 }
 \arguments{
 \item{param}{The parameter of interest. The shortcut "int" is recognized.}
 
 \item{modObj}{The \code{lm} or \code{summary.lm} object.}
 
-\item{asEqn}{Should output be a markdown equation?}
-
 \item{...}{Other options.}
+
+\item{asEqn}{Should output be a markdown equation?}
 }
 \description{
 Prints an APA formated string of the form:

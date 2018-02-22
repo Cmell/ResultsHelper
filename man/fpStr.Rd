@@ -5,7 +5,7 @@
 \title{Prints an APA formated string of the form:
 \code{F(df1,df2),p[=,<]pval}.}
 \usage{
-fpStr(param, modObj, asEqn = NULL, digits = NULL, dfDigits = NULL)
+fpStr(param, modObj, ...)
 }
 \arguments{
 \item{param}{The parameter of interest. The shortcut "int" is recognized
@@ -13,9 +13,9 @@ as well as the "total" term.}
 
 \item{modObj}{The \code{lm} or \code{summary.lm} object.}
 
-\item{asEqn}{Should output be a markdown equation?}
-
 \item{...}{Other options.}
+
+\item{asEqn}{Should output be a markdown equation?}
 }
 \description{
 Prints an APA formated string of the form:

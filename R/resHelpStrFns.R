@@ -247,7 +247,7 @@ tStr <- function (param, modObj, ...) {
   return(str)
 }
 
-mStr <- function (v, na.rm=F, digits=NULL, asEqn=NULL) {
+mStr <- function (v, na.rm=F, ...) {
   #' Prints an APA formatted mean.
   #' 
   #' @param v Either a mean value or a vector. If a vector, then \code{mean()} 
@@ -257,7 +257,7 @@ mStr <- function (v, na.rm=F, digits=NULL, asEqn=NULL) {
   #' @export mStr 
   
   # Get options
-  getOpts()
+  getOpts(...)
   
   if (length(v) > 1) {
     mn <- mean(v, na.rm=na.rm)
@@ -275,7 +275,7 @@ mStr <- function (v, na.rm=F, digits=NULL, asEqn=NULL) {
   return(str)
 }
 
-sdStr <- function (v, na.rm=F, digits=NULL, asEqn=NULL) {
+sdStr <- function (v, na.rm=F, ...) {
   #' Prints an APA formatted sd.
   #' 
   #' @param v Either a mean value or a vector. If a vector, then \code{sd()} 
@@ -291,7 +291,7 @@ sdStr <- function (v, na.rm=F, digits=NULL, asEqn=NULL) {
   }
   
   # Get options
-  getOpts()
+  getOpts(...)
   
   # Make a string!
   str <- paste0('SD=', formatC(sd, digits=digits, format='f'))
@@ -303,7 +303,7 @@ sdStr <- function (v, na.rm=F, digits=NULL, asEqn=NULL) {
   return(str)
 }
 
-confIntSum <- function (object, parm, confLvl=NULL) {
+confIntSum <- function (object, parm, ...) {
   #' Confidence interval for summary objects. Derived directly from 
   #' \code{confint.lm()}.
   #' 
@@ -314,7 +314,7 @@ confIntSum <- function (object, parm, confLvl=NULL) {
   #' @param confLvl Alpha value.
   #' 
   
-  getOpts()
+  getOpts(...)
   
   cf <- coef(object)[,"Estimate"]
   pnames <- names(cf)
@@ -334,7 +334,7 @@ confIntSum <- function (object, parm, confLvl=NULL) {
 }
 
 
-confIntStr <- function (param, modObj, digits=NULL, confLvl=NULL, asEqn=NULL) {
+confIntStr <- function (param, modObj, ...) {
   #' Constructs an APA formatted string for a confidence interval around
   #' a parameter estimate from a model.
   #' 
@@ -347,7 +347,7 @@ confIntStr <- function (param, modObj, digits=NULL, confLvl=NULL, asEqn=NULL) {
   #' @export confIntStr
   #' 
   
-  getOpts()
+  getOpts(...)
   
   prep <- resHelpPrep(param, modObj)
   param <- prep$param; sumObj <- prep$lmSumObj
@@ -366,7 +366,7 @@ confIntStr <- function (param, modObj, digits=NULL, confLvl=NULL, asEqn=NULL) {
 }
 
 
-fpStr <- function (param, modObj, asEqn=NULL, digits=NULL, dfDigits=NULL) {
+fpStr <- function (param, modObj, ...) {
   #' Prints an APA formated string of the form:
   #' \code{F(df1,df2),p[=,<]pval}.
   #' 
@@ -379,7 +379,7 @@ fpStr <- function (param, modObj, asEqn=NULL, digits=NULL, dfDigits=NULL) {
   #' @export fpStr
   
   # Get options
-  getOpts()
+  getOpts(...)
   
   fstr <- fStr(param, modObj, asEqn=F, digits=digits, dfDigits=dfDigits)
   pstr <- pStr(param, modObj, asEqn=F, pDigits)
@@ -393,7 +393,7 @@ fpStr <- function (param, modObj, asEqn=NULL, digits=NULL, dfDigits=NULL) {
   return(str)
 }
 
-tpStr <- function (param, modObj, asEqn=NULL, ...) {
+tpStr <- function (param, modObj, ...) {
   #' Prints an APA formated string of the form:
   #' \code{t(df),p[=,<]pval}.
   #' 
@@ -404,7 +404,7 @@ tpStr <- function (param, modObj, asEqn=NULL, ...) {
   #' 
   #' @export tpStr
   
-  getOpts()
+  getOpts(...)
   
   tstr <- tStr(param, modObj, asEqn=F, digits=digits, dfdigits=dfdigits)
   pstr <- pStr(param, modObj, asEqn=F, pdigits=pdigits)

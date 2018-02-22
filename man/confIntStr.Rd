@@ -5,7 +5,7 @@
 \title{Constructs an APA formatted string for a confidence interval around
 a parameter estimate from a model.}
 \usage{
-confIntStr(param, modObj, digits = NULL, confLvl = NULL, asEqn = NULL)
+confIntStr(param, modObj, ...)
 }
 \arguments{
 \item{param}{The parameter of interest. Can be "int" as a shortcut 

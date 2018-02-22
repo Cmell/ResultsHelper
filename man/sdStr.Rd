@@ -4,7 +4,7 @@
 \alias{sdStr}
 \title{Prints an APA formatted sd.}
 \usage{
-sdStr(v, na.rm = F, digits = NULL, asEqn = NULL)
+sdStr(v, na.rm = F, ...)
 }
 \arguments{
 \item{v}{Either a mean value or a vector. If a vector, then \code{sd()} 

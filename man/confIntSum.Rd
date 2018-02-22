@@ -5,7 +5,7 @@
 \title{Confidence interval for summary objects. Derived directly from 
 \code{confint.lm()}.}
 \usage{
-confIntSum(object, parm, confLvl = NULL)
+confIntSum(object, parm, ...)
 }
 \arguments{
 \item{object}{Summary object of lm model.}
