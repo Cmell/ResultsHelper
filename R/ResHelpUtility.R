@@ -11,7 +11,7 @@
 #' @param objClass A character string of the class of object to be selected.
 #' @param ... Other options to pass to \code{save}
 #'
-#' @export
+#' @export saveAllModelObjects
 #'
 saveAllModelObjects <- function (file, envir=".GlobalEnv", objClass="lm", ...) {
   if (missing(file)) {
