@@ -140,7 +140,7 @@ eta2Str <- function (param, modObj, ...) {
   #' f-value, or "int" as a shortcut for "(Intercept)".
   #' @param modObj Either an \code{lm} or \code{summary.lm} (faster) object.
   #' @param ... Options.
-  #' @export fStr
+  #' @export eta2Str
   
   # Get default values we need if not provided
   getOpts(...)
