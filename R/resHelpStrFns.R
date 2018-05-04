@@ -208,6 +208,42 @@ pStr <- function (param, modObj, ...) {
   return(str)
 }
 
+betaStr <- function (param, modObj, ...) {
+  #' Constructs an APA formatted string for an estimated regression coefficient.
+  #' 
+  #' @param param The parameter of interest. Can be "int" as a shortcut 
+  #' for "(Intercept)".
+  #' @param modObj Either an \code{lm} or \code{summary.lm} (faster) object.
+  #' @param ... Options.
+  #' @export betaStr
+  
+  # Get options
+  getOpts(...)
+  
+  prep <- resHelpPrep (param, modObj)
+  param <- prep$param; lmSumObj <- prep$lmSumObj
+  
+  # Get the right b-value.
+  if (param=='total') {
+    stop('b-values do not make sense for omnibus tests!')
+  } else {
+    bVal <- lmSumObj$coefficients[param, 'Estimate']
+  }
+  
+  # Make a string
+  baseStr <- paste0('b=', 
+                    formatC(bVal, digits=digits, format='f')
+  )
+  
+  if (asEqn) {
+    str <- paste0('$', baseStr, '$')
+  } else {
+    str <- baseStr
+  }
+  
+  return(str)
+}
+
 tStr <- function (param, modObj, ...) {
   #' Constructs an APA formatted string for a t-value.
   #' 
@@ -223,7 +259,7 @@ tStr <- function (param, modObj, ...) {
   prep <- resHelpPrep (param, modObj)
   param <- prep$param; lmSumObj <- prep$lmSumObj
   
-  # Get the right p-value.
+  # Get the right t-value.
   if (param=='total') {
     stop('t-values do not make sense for omnibus tests! Use F instead.')
   } else {
@@ -430,16 +466,16 @@ printStats <- function (param, modObj, ...) {
   #' 
   #' @details 
   #' The \code{template} argument is a string containing a sequence of the
-  #' following characters, each separated by an underscore (always lowercase):
+  #' following characters, each separated by an underscore:
   #' \itemize{
+  #'   \item b: An estimated regression coefficient, e.g., \eqn{b=1.10}
   #'   \item f: An 1-degree-of-freedom F-statistic, e.g., \eqn{F(1,36)=4.2}
   #'   \item t: A t-statistic, e.g., \eqn{t(38)=2.1}
-  #'   \item p: A p-value, e.g., \eqn{p=.03} or \eqn{p<.01} depending on the
-  #'   value
+  #'   \item p: A p-value, e.g., \eqn{p=.03} or \eqn{p<.01} depending on the value
   #'   \item eta2: An \eqn{\eta^2_p} value, e.g., \eqn{\eta^2_p=0.056}
   #'   \item m: A mean, e.g., \eqn{M=.45}.
   #'   \item sd: A standard deviation, e.g., \eqn{SD=.34}
-  #'   \item ci: A confidence interval, e.g., \eqn{95%CI[.01, 2.34]}
+  #'   \item ci: A confidence interval, e.g., \eqn{95\%CI[.01, 2.34]}
   #' }
   #' Note that the same set of \code{...} arguments is passed to every function 
   #' call. Otherwise, the strings are built with default argument values as
@@ -450,6 +486,7 @@ printStats <- function (param, modObj, ...) {
   getOpts(...)
   
   fnNms <- list(
+    b=betaStr,
     f=fStr,
     t=tStr,
     p=pStr,
