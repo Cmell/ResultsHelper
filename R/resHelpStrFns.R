@@ -1,10 +1,14 @@
+# Load lmerTest library so summary objects come out right.
+library(lmerTest)
+
 # Set up the options for the package:
 
 optEnv <- new.env()
 optDefaults <- list(
   'digits'=2,
   'dfDigits'=0,
-  'pDigits'=2,
+  'pDigits'=3,
+  'eta2Digits'=3,
   'confLvl'=.95,
   'asEqn'=T,
   'template'='f_eta2_p'
@@ -63,12 +67,14 @@ resHelpPrep <- function(param, modObj) {
   #' 
   
   # Make sure we have at least an lm object or a summary
-  if (!class(modObj) %in% c('lm', 'summary.lm')) {
-    stop('need an lm object or a summary object')
+  if (!class(modObj) %in% c(
+    'lm', 'summary.lm', 'merModLmerTest', 
+    'glmerMod')) {
+    stop('need an lm, summary.lm, or merModLmerTest object')
   }
   
   # make a summary object if necessary
-  if (!class(modObj)=='summary.lm') {
+  if (class(modObj) %in% c('lm', 'merModLmerTest', 'glmerMod')) {
     lmSumObj <- summary(modObj)
   } else {
     lmSumObj <- modObj
@@ -85,6 +91,29 @@ resHelpPrep <- function(param, modObj) {
   return(list(param=param, 
               lmSumObj=lmSumObj
               ))
+}
+
+strNoLeadZero <- function (val, digits=3) {
+  #' Writes a decimal string with no leading zeros.
+  #' 
+  #' @param val A numeric value.
+  #' 
+  #' @return A character string.
+  #' 
+  
+  # We have to construct our own string to omit leading zeros
+  #browser()
+  val <- round(val * 10^digits, 0)
+  valStr <- formatC(val, digits=0, format='f')
+  #browser()
+  lgErr <- digits - length(strsplit(valStr, "")[[1]])
+  if (lgErr > 0) {
+    # need to add zeros up front
+    valStr <- paste(c(rep("0", lgErr), valStr), collapse="")
+  }
+  valStr <- paste0(".", valStr)
+  
+  return(valStr)
 }
 
 fStr <- function (param, modObj, ...) {
@@ -154,18 +183,17 @@ eta2Str <- function (param, modObj, ...) {
   rdf <- lmSumObj$df[2]
   r2 <- fval/(fval+rdf)
   
-  # round all the numbers
-  r2 <- formatC(r2, digits=digits, format='f')
+  r2Str <- strNoLeadZero(r2, digits = eta2Digits)
   
   # make a string!
-  str <- paste0('\\eta^2_p=', r2)
+  str <- paste0('\\eta^2_p=', r2Str)
   if (asEqn) {
     str <- paste0('$', str, '$')
   }
   return(str)
 }
 
-pStr <- function (param, modObj, ...) {
+pStr <- function (param, modObj, p=NULL, ...) {
   #' Constructs an APA formatted string for a p-value.
   #' 
   #' @param param The parameter of interest. Can be "total" for the omnibus
@@ -177,17 +205,27 @@ pStr <- function (param, modObj, ...) {
   # Get options.
   getOpts(...)
   
-  prep <- resHelpPrep (param, modObj)
-  param <- prep$param; lmSumObj <- prep$lmSumObj
-  
-  # Get the right p-value.
-  if (param=='total') {
-    pVal <- 
-      1 - pf(lmSumObj$fstatistic['value'], 
-             lmSumObj$fstatistic['numdf'],
-             lmSumObj$fstatistic['dendf'])
+  if (is.null(p)) {
+    prep <- resHelpPrep (param, modObj)
+    param <- prep$param; lmSumObj <- prep$lmSumObj
+    
+    # Get the right p-value.
+    if (param=='total') {
+      pVal <- 
+        1 - pf(lmSumObj$fstatistic['value'], 
+               lmSumObj$fstatistic['numdf'],
+               lmSumObj$fstatistic['dendf'])
+    } else {
+      if ('Pr(>|t|)' %in% colnames(lmSumObj$coefficients)) {
+        pVal <- lmSumObj$coefficients[param, 'Pr(>|t|)']
+      } else if ('Pr(>|z|)' %in% colnames(lmSumObj$coefficients)){
+        pVal <- lmSumObj$coefficients[param, 'Pr(>|z|)']
+      } else {
+        stop("no p value found")
+      }
+    }
   } else {
-    pVal <- lmSumObj$coefficients[param, 'Pr(>|t|)']
+    pVal <- p
   }
   
   # Make a string
@@ -196,7 +234,7 @@ pStr <- function (param, modObj, ...) {
   } else if (pVal < .01 & pDigits <= 2) {
     baseStr <- "p<.01"
   } else {
-    baseStr <-  paste0('p=', formatC(pVal, digits=pDigits, format='f'))
+    baseStr <-  paste0('p=', strNoLeadZero(pVal, digits=pDigits))
   }
   
   if (asEqn) {
@@ -244,6 +282,52 @@ betaStr <- function (param, modObj, ...) {
   return(str)
 }
 
+rStr <- function (param, modObj, r=NULL, ...) {
+  #' Constructs an APA formatted string for a correlation, but from lm().
+  #' 
+  #' @param param The parameter of interest. Can be "int" as a shortcut 
+  #' for "(Intercept)".
+  #' @param modObj Either an \code{lm} or \code{summary.lm} (faster) object.
+  #' @param ... Options.
+  #' @export rStr
+  
+  # Get options
+  getOpts(...)
+  
+  if (is.null(r)) {
+  prep <- resHelpPrep (param, modObj)
+  param <- prep$param; lmSumObj <- prep$lmSumObj
+  
+  # We get r by computing eta^2 and sqrt()
+  fval <- (lmSumObj$coefficients[param,'t value']) ^ 2
+  rdf <- lmSumObj$df[2]
+  rVal <- sqrt(fval/(fval+rdf))
+  } else {
+    rVal <- r
+  }
+  
+  # Make a string
+  #browser()
+  if (nrow(lmSumObj$coefficients) > 2) {
+    baseStr <- paste0('r_p(', rdf, ')=',
+                      formatC(rVal, digits=digits, format='f')
+    )
+  } else {
+    baseStr <- paste0('r(', rdf, ')=',
+                      formatC(rVal, digits=digits, format='f')
+    )
+  }
+  
+  
+  if (asEqn) {
+    str <- paste0('$', baseStr, '$')
+  } else {
+    str <- baseStr
+  }
+  
+  return(str)
+}
+
 tStr <- function (param, modObj, ...) {
   #' Constructs an APA formatted string for a t-value.
   #' 
@@ -272,6 +356,43 @@ tStr <- function (param, modObj, ...) {
                     formatC(df, digits=dfDigits, format='f'), 
                     ')=', 
                     formatC(tVal, digits=digits, format='f')
+  )
+  
+  if (asEqn) {
+    str <- paste0('$', baseStr, '$')
+  } else {
+    str <- baseStr
+  }
+  
+  return(str)
+}
+
+zStr <- function (param, modObj, ...) {
+  #' Constructs an APA formatted string for a t-value.
+  #' 
+  #' @param param The parameter of interest. Can be "int" as a shortcut 
+  #' for "(Intercept)".
+  #' @param modObj Either an \code{lm} or \code{summary.lm} (faster) object.
+  #' @param ... Options.
+  #' @export tStr
+  
+  # Get options
+  getOpts(...)
+  
+  prep <- resHelpPrep (param, modObj)
+  param <- prep$param; lmSumObj <- prep$lmSumObj
+  
+  # Get the right t-value.
+  if (param=='total') {
+    stop('z-values do not make sense for omnibus tests! Use F instead.')
+  } else {
+    zVal <- lmSumObj$coefficients[param, 'z value']
+    df <- lmSumObj$df[2]
+  }
+  
+  # Make a string
+  baseStr <- paste0('z=', 
+                    formatC(zVal, digits=digits, format='f')
   )
   
   if (asEqn) {
@@ -454,11 +575,12 @@ tpStr <- function (param, modObj, ...) {
   return(str)
 }
 
-printStats <- function (param, modObj, ...) {
+printStats <- function (param, modObj, asCor = F, ...) {
   #' @title Print a Formatted Stats String
   #' 
   #' @param param The parameter of interest. The shortcut "int" is recognized.
   #' @param modObj The \code{lm} or \code{summary.lm} object.
+  #' @param asCor Should the stats be reported as a correlation? Defaults F.
   #' @param template A string specifying which stats to include in this string. 
   #' See details for how to construct a string. If left as \code{NULL}, the 
   #' default template is used.
@@ -469,10 +591,11 @@ printStats <- function (param, modObj, ...) {
   #' following characters, each separated by an underscore:
   #' \itemize{
   #'   \item b: An estimated regression coefficient, e.g., \eqn{b=1.10}
+  #'   \item r: Report a coefficient as a correlation, e.g., \eqn{r(35)=0.45}
   #'   \item f: An 1-degree-of-freedom F-statistic, e.g., \eqn{F(1,36)=4.2}
   #'   \item t: A t-statistic, e.g., \eqn{t(38)=2.1}
   #'   \item p: A p-value, e.g., \eqn{p=.03} or \eqn{p<.01} depending on the value
-  #'   \item eta2: An \eqn{\eta^2_p} value, e.g., \eqn{\eta^2_p=0.056}
+  #'   \item eta2: An \eqn{\eta^2_p} value, e.g., \eqn{\eta^2_p=.056}
   #'   \item m: A mean, e.g., \eqn{M=.45}.
   #'   \item sd: A standard deviation, e.g., \eqn{SD=.34}
   #'   \item ci: A confidence interval, e.g., \eqn{95\%CI[.01, 2.34]}
@@ -481,15 +604,20 @@ printStats <- function (param, modObj, ...) {
   #' call. Otherwise, the strings are built with default argument values as
   #' normal.
   #' 
+  #' If \code{asCor=T}, the reporting is as a correlation. If there is more than
+  #' 1 slope in the model object, the correlation is reported as partial.
+  #' 
   #' @export printStats
   
   getOpts(...)
   
   fnNms <- list(
     b=betaStr,
+    r=rStr,
     f=fStr,
     t=tStr,
     p=pStr,
+    z=zStr,
     ci=confIntStr,
     m=mStr,
     sd=sdStr,
@@ -512,4 +640,3 @@ printStats <- function (param, modObj, ...) {
   
   return(mainStr)
 }
-

@@ -4,12 +4,14 @@
 \alias{printStats}
 \title{Print a Formatted Stats String}
 \usage{
-printStats(param, modObj, ...)
+printStats(param, modObj, asCor = F, ...)
 }
 \arguments{
 \item{param}{The parameter of interest. The shortcut "int" is recognized.}
 
 \item{modObj}{The \code{lm} or \code{summary.lm} object.}
+
+\item{asCor}{Should the stats be reported as a correlation? Defaults F.}
 
 \item{...}{Other options.}
 
@@ -17,15 +19,19 @@ printStats(param, modObj, ...)
 See details for how to construct a string. If left as \code{NULL}, the 
 default template is used.}
 }
+\description{
+Print a Formatted Stats String
+}
 \details{
 The \code{template} argument is a string containing a sequence of the
 following characters, each separated by an underscore:
 \itemize{
   \item b: An estimated regression coefficient, e.g., \eqn{b=1.10}
+  \item r: Report a coefficient as a correlation, e.g., \eqn{r(35)=0.45}
   \item f: An 1-degree-of-freedom F-statistic, e.g., \eqn{F(1,36)=4.2}
   \item t: A t-statistic, e.g., \eqn{t(38)=2.1}
   \item p: A p-value, e.g., \eqn{p=.03} or \eqn{p<.01} depending on the value
-  \item eta2: An \eqn{\eta^2_p} value, e.g., \eqn{\eta^2_p=0.056}
+  \item eta2: An \eqn{\eta^2_p} value, e.g., \eqn{\eta^2_p=.056}
   \item m: A mean, e.g., \eqn{M=.45}.
   \item sd: A standard deviation, e.g., \eqn{SD=.34}
   \item ci: A confidence interval, e.g., \eqn{95\%CI[.01, 2.34]}
@@ -33,4 +39,7 @@ following characters, each separated by an underscore:
 Note that the same set of \code{...} arguments is passed to every function 
 call. Otherwise, the strings are built with default argument values as
 normal.
+
+If \code{asCor=T}, the reporting is as a correlation. If there is more than
+1 slope in the model object, the correlation is reported as partial.
 }
