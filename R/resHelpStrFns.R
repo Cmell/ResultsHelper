@@ -116,7 +116,56 @@ strNoLeadZero <- function (val, digits=3) {
   return(valStr)
 }
 
-fStr <- function (param, modObj, ...) {
+fStrFromLm <- function (param, modObj, ...) {
+  #' Constructs an APA formatted string for an F value.
+  #' 
+  #' @param param The parameter of interest. Can be "total" for the omnibus
+  #' f-value, or "int" as a shortcut for "(Intercept)".
+  #' @param modObj Either an \code{lm} or \code{summary.lm} (faster) object.
+  #' @param ... Options.
+  #' 
+  #' @export fStrFromLm
+  
+  # Get model info
+  validated <- resHelpPrep(param, modObj)
+  param = validated$param; lmSumObj <- validated$lmSumObj
+  
+  # Get the right f value and degrees of freedom
+  if (param == 'total') {
+    if (lmSumObj$df[1] > 1) {
+      fval <- lmSumObj$fstatistic['value']
+      df1 <- lmSumObj$fstatistic['numdf']
+    } else {
+      fval <- (lmSumObj$coefficients['(Intercept)','t value']) ^ 2
+      df1 <- 1
+    }
+  } else {
+    fval <- (lmSumObj$coefficients[param,'t value']) ^ 2
+    df1 <- 1
+  }
+  df2 <- lmSumObj$df[2]
+  fStr <- fStr(fval=fval, df1=df1, df2=df2, ...)
+  
+  return(fStr)
+}
+
+fStrFromModelCompare <- function(mcObj, ...) {
+  #' Constructs an APA formatted string for an F value from a model comparison.
+  #' 
+  #' @param mcObj The parameter of interest. Can be "total" for the omnibus
+  #' f-value, or "int" as a shortcut for "(Intercept)".
+  #' @param ... Options.
+  #' 
+  #' @export fStrFromModelCompare
+
+  fval <- mcObj$Fstat
+  df1 <- mcObj$nDF
+  df2 <- mcObj$dDF
+  
+  return(fStr(fval, df1, df2, ...))
+}
+
+fStr <- function (fval, df1, df2, ...) {
   #' Constructs an APA formatted string for an F value.
   #' 
   #' @param param The parameter of interest. Can be "total" for the omnibus
@@ -128,39 +177,19 @@ fStr <- function (param, modObj, ...) {
   # Get default values we need if not provided
   getOpts(...)
   
-  # Get model info
-  validated <- resHelpPrep(param, modObj)
-  param = validated$param; lmSumObj <- validated$lmSumObj
-  
-  # Get the right f value and degrees of freedom
-  if (param == 'total') {
-    if (lmSumObj$df[1] > 1) {
-      f <- lmSumObj$fstatistic['value']
-      df1 <- lmSumObj$fstatistic['numdf']
-    } else {
-      f <- (lmSumObj$coefficients['(Intercept)','t value']) ^ 2
-      df1 <- 1
-    }
-  } else {
-    f <- (lmSumObj$coefficients[param,'t value']) ^ 2
-    df1 <- 1
-  }
-  df2 <- lmSumObj$df[2]
-  
-  # round all the numbers
-  f <- formatC(f, digits=digits, format='f')
+  fStr <- formatC(fval, digits=digits, format='f')
   df1 <- formatC(df1, digits=dfDigits, format='f') 
   df2 <- formatC(df2, digits=dfDigits, format='f')
   
   # make a string!
-  str <- paste0('F(', df1, ',', df2, ')=', f)
+  str <- paste0('F(', df1, ',', df2, ')=', fStr)
   if (asEqn) {
     str <- paste0('$', str, '$')
   }
   return(str)
 }
 
-eta2Str <- function (param, modObj, ...) {
+eta2StrFromLm <- function (param, modObj, ...) {
   #' Constructs an APA formatted string for an \eqn{\eta^2_p} value. Note that
   #' this needs to be an equation for the character to display correctly in 
   #' Markdown (\eqn{LaTeX}).
@@ -169,7 +198,7 @@ eta2Str <- function (param, modObj, ...) {
   #' f-value, or "int" as a shortcut for "(Intercept)".
   #' @param modObj Either an \code{lm} or \code{summary.lm} (faster) object.
   #' @param ... Options.
-  #' @export eta2Str
+  #' @export eta2StrFromLm
   
   # Get default values we need if not provided
   getOpts(...)
@@ -183,9 +212,38 @@ eta2Str <- function (param, modObj, ...) {
   rdf <- lmSumObj$df[2]
   r2 <- fval/(fval+rdf)
   
-  r2Str <- strNoLeadZero(r2, digits = eta2Digits)
+  # make a string!
+  str <- eta2Str(r2, ...)
+  return(str)
+}
+
+eta2StrFromModelCompare <- function (mcObj, ...) {
+  #' Constructs an APA formatted string for an \eqn{\eta^2_p} value. Note that
+  #' this needs to be an equation for the character to display correctly in 
+  #' Markdown (\eqn{LaTeX}).
+  #' 
+  #' @param mcObj Output from \code{modelCompare}
+  #' @param ... Options.
+  #' @export eta2StrFromModelCompare
+  #' 
+
+  return(eta2Str(mcObj$PRE, ...))
+}
+
+eta2Str <- function (r2, ...) {
+  #' Constructs an APA formatted string for an \eqn{\eta^2_p} value. Note that
+  #' this needs to be an equation for the character to display correctly in 
+  #' Markdown (\eqn{LaTeX}).
+  #' 
+  #' @param r2 An eta2 value.
+  #' @param ... Options.
+  #' @export eta2Str
+  
+  # Get default values we need if not provided
+  getOpts(...)
   
   # make a string!
+  r2Str <- strNoLeadZero(r2, digits = eta2Digits)
   str <- paste0('\\eta^2_p=', r2Str)
   if (asEqn) {
     str <- paste0('$', str, '$')
@@ -193,7 +251,52 @@ eta2Str <- function (param, modObj, ...) {
   return(str)
 }
 
-pStr <- function (param, modObj, p=NULL, ...) {
+pStrFromLm <- function (param, modObj, ...) {
+  #' Constructs an APA formatted string for a p-value.
+  #' 
+  #' @param param The parameter of interest. Can be "total" for the omnibus
+  #' f-value, or "int" as a shortcut for "(Intercept)".
+  #' @param modObj Either an \code{lm} or \code{summary.lm} (faster) object.
+  #' @param ... Options.
+  #' @export pStrFromLm
+  
+  prep <- resHelpPrep (param, modObj)
+  param <- prep$param; lmSumObj <- prep$lmSumObj
+  
+  # Get the right p-value.
+  if (param=='total') {
+    pVal <- 
+      1 - pf(lmSumObj$fstatistic['value'], 
+             lmSumObj$fstatistic['numdf'],
+             lmSumObj$fstatistic['dendf'])
+  } else {
+    if ('Pr(>|t|)' %in% colnames(lmSumObj$coefficients)) {
+      pVal <- lmSumObj$coefficients[param, 'Pr(>|t|)']
+    } else if ('Pr(>|z|)' %in% colnames(lmSumObj$coefficients)){
+      pVal <- lmSumObj$coefficients[param, 'Pr(>|z|)']
+    } else {
+      stop("no p value found")
+    }
+  }
+  
+  # Make a string
+  str <- pStr(pVal, ...)
+  
+  return(str)
+}
+
+pStrFromModelCompare <- function (mcObj, ...) {
+  #' Constructs a string for a p-value from \code{modelCompare} output.
+  #' 
+  #' @param mcObj An object from \code{modelCompare}.
+  #' @param ... Options.
+  #' @export pStrFromModelCompare
+
+  
+  return(pStr(mcObj$p, ...))
+}
+
+pStr <- function (pVal, ...) {
   #' Constructs an APA formatted string for a p-value.
   #' 
   #' @param param The parameter of interest. Can be "total" for the omnibus
@@ -204,29 +307,6 @@ pStr <- function (param, modObj, p=NULL, ...) {
   
   # Get options.
   getOpts(...)
-  
-  if (is.null(p)) {
-    prep <- resHelpPrep (param, modObj)
-    param <- prep$param; lmSumObj <- prep$lmSumObj
-    
-    # Get the right p-value.
-    if (param=='total') {
-      pVal <- 
-        1 - pf(lmSumObj$fstatistic['value'], 
-               lmSumObj$fstatistic['numdf'],
-               lmSumObj$fstatistic['dendf'])
-    } else {
-      if ('Pr(>|t|)' %in% colnames(lmSumObj$coefficients)) {
-        pVal <- lmSumObj$coefficients[param, 'Pr(>|t|)']
-      } else if ('Pr(>|z|)' %in% colnames(lmSumObj$coefficients)){
-        pVal <- lmSumObj$coefficients[param, 'Pr(>|z|)']
-      } else {
-        stop("no p value found")
-      }
-    }
-  } else {
-    pVal <- p
-  }
   
   # Make a string
   if (pVal < .001) {
@@ -576,7 +656,7 @@ tpStr <- function (param, modObj, ...) {
 }
 
 printStats <- function (param, modObj, asCor = F, ...) {
-  #' @title Print a Formatted Stats String
+  #' @title Print a Formatted Stats String from LM Object
   #' 
   #' @param param The parameter of interest. The shortcut "int" is recognized.
   #' @param modObj The \code{lm} or \code{summary.lm} object.
@@ -594,7 +674,8 @@ printStats <- function (param, modObj, asCor = F, ...) {
   #'   \item r: Report a coefficient as a correlation, e.g., \eqn{r(35)=0.45}
   #'   \item f: An 1-degree-of-freedom F-statistic, e.g., \eqn{F(1,36)=4.2}
   #'   \item t: A t-statistic, e.g., \eqn{t(38)=2.1}
-  #'   \item p: A p-value, e.g., \eqn{p=.03} or \eqn{p<.01} depending on the value
+  #'   \item p: A p-value, e.g., \eqn{p=.03} or \eqn{p<.01} depending on the 
+  #'   value
   #'   \item eta2: An \eqn{\eta^2_p} value, e.g., \eqn{\eta^2_p=.056}
   #'   \item m: A mean, e.g., \eqn{M=.45}.
   #'   \item sd: A standard deviation, e.g., \eqn{SD=.34}
@@ -614,18 +695,73 @@ printStats <- function (param, modObj, asCor = F, ...) {
   fnNms <- list(
     b=betaStr,
     r=rStr,
-    f=fStr,
+    f=fStrFromLm,
     t=tStr,
-    p=pStr,
+    p=pStrFromLm,
     z=zStr,
     ci=confIntStr,
     m=mStr,
     sd=sdStr,
-    eta2=eta2Str
+    eta2=eta2StrFromLm
   )
   fnStr <- strsplit(template, '_')[[1]]
   strLst <- sapply(fnStr, function (fnNm) {
     fnNms[[fnNm]](param = param, modObj = modObj, asEqn=F, ...)
+  })
+  
+  if (asEqn) {
+    strLst <- sapply(strLst, function (str) {
+      return(paste0('$', str, '$'))
+    })
+  }
+  
+  mainStr <- Reduce(function (str1, str2) {
+    return(paste0(str1, ', ', str2))
+  }, strLst)
+  
+  return(mainStr)
+}
+
+printStatsFromModelCompare <- function (mcObj, asCor = F, ...) {
+  #' @title Print a Formatted Stats String from a \code{modelCompare} Object
+  #' 
+  #' @param mcObj The object resulting from a \code{modelCompare} call.
+  #' @param template A string specifying which stats to include in this string. 
+  #' See details for how to construct a string. If left as \code{NULL}, the 
+  #' default template is used.
+  #' @param ... Other options.
+  #' 
+  #' @details 
+  #' The \code{template} argument is a string containing a sequence of the
+  #' following characters, each separated by an underscore:
+  #' \itemize{
+  #'   \item f: An 1-degree-of-freedom F-statistic, e.g., \eqn{F(1,36)=4.2}
+  #'   \item t: A t-statistic, e.g., \eqn{t(38)=2.1}
+  #'   \item p: A p-value, e.g., \eqn{p=.03} or \eqn{p<.01} depending on the 
+  #'   value
+  #'   \item eta2: An \eqn{\eta^2_p} value, e.g., \eqn{\eta^2_p=.056}
+  #'   \item deltaR2: not currently implemented
+  #'   \item ci: A confidence interval, e.g., \eqn{95\%CI[.01, 2.34]}. Not 
+  #'   currently implemented.
+  #' }
+  #' Note that the same set of \code{...} arguments is passed to every function 
+  #' call. Otherwise, the strings are built with default argument values as
+  #' normal.
+  #' 
+  #' @export printStatsFromModelCompare
+  
+  getOpts(...)
+  
+  fnNms <- list(
+    f=fStrFromModelCompare,
+    #t=tStrFromModelCompare,
+    p=pStrFromModelCompare,
+    #ci=confIntStr,
+    eta2=eta2StrFromModelCompare
+  )
+  fnStr <- strsplit(template, '_')[[1]]
+  strLst <- sapply(fnStr, function (fnNm) {
+    fnNms[[fnNm]](mcObj, asEqn=F, ...)
   })
   
   if (asEqn) {

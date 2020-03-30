@@ -4,15 +4,15 @@
 \alias{pStr}
 \title{Constructs an APA formatted string for a p-value.}
 \usage{
-pStr(param, modObj, p = NULL, ...)
+pStr(pVal, ...)
 }
 \arguments{
+\item{...}{Options.}
+
 \item{param}{The parameter of interest. Can be "total" for the omnibus
 f-value, or "int" as a shortcut for "(Intercept)".}
 
 \item{modObj}{Either an \code{lm} or \code{summary.lm} (faster) object.}
-
-\item{...}{Options.}
 }
 \description{
 Constructs an APA formatted string for a p-value.
