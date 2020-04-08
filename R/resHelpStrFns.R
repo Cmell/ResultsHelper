@@ -326,6 +326,36 @@ pStr <- function (pVal, ...) {
   return(str)
 }
 
+pStrNoP <- function (pVal, ...) {
+  #' Constructs an APA formatted string for a p-value.
+  #' 
+  #' @param param The parameter of interest. Can be "total" for the omnibus
+  #' f-value, or "int" as a shortcut for "(Intercept)".
+  #' @param modObj Either an \code{lm} or \code{summary.lm} (faster) object.
+  #' @param ... Options.
+  #' @export pStrNoP
+  
+  # Get options.
+  getOpts(...)
+  
+  # Make a string
+  if (pVal < .001) {
+    baseStr <- "<.001"
+  } else if (pVal < .01 & pDigits <= 2) {
+    baseStr <- "<.01"
+  } else {
+    baseStr <-  paste0(strNoLeadZero(pVal, digits=pDigits))
+  }
+  
+  if (asEqn) {
+    str <- paste0('$', baseStr, '$')
+  } else {
+    str <- baseStr
+  }
+  
+  return(str)
+}
+
 betaStr <- function (param, modObj, ...) {
   #' Constructs an APA formatted string for an estimated regression coefficient.
   #' 
@@ -362,7 +392,40 @@ betaStr <- function (param, modObj, ...) {
   return(str)
 }
 
-rStr <- function (param, modObj, r=NULL, ...) {
+rStr <- function (rVal, rdf, partial=F, ...) {
+  #' Constructs an APA formatted string for a correlation, but from lm().
+  #' 
+  #' @param param The parameter of interest. Can be "int" as a shortcut 
+  #' for "(Intercept)".
+  #' @param modObj Either an \code{lm} or \code{summary.lm} (faster) object.
+  #' @param ... Options.
+  #' @export rStr
+  
+  # Get options
+  getOpts(...)
+  
+  # Make a string
+  #browser()
+  if (partial) {
+    baseStr <- paste0('r_p(', rdf, ')=',
+                      formatC(rVal, digits=digits, format='f')
+    )
+  } else {
+    baseStr <- paste0('r(', rdf, ')=',
+                      formatC(rVal, digits=digits, format='f')
+    )
+  }
+  
+  if (asEqn) {
+    str <- paste0('$', baseStr, '$')
+  } else {
+    str <- baseStr
+  }
+  
+  return(str)
+}
+
+rStrFromLm <- function (param, modObj, r=NULL, ...) {
   #' Constructs an APA formatted string for a correlation, but from lm().
   #' 
   #' @param param The parameter of interest. Can be "int" as a shortcut 
@@ -375,35 +438,40 @@ rStr <- function (param, modObj, r=NULL, ...) {
   getOpts(...)
   
   if (is.null(r)) {
-  prep <- resHelpPrep (param, modObj)
-  param <- prep$param; lmSumObj <- prep$lmSumObj
-  
-  # We get r by computing eta^2 and sqrt()
-  fval <- (lmSumObj$coefficients[param,'t value']) ^ 2
-  rdf <- lmSumObj$df[2]
-  rVal <- sqrt(fval/(fval+rdf))
+    prep <- resHelpPrep (param, modObj)
+    param <- prep$param; lmSumObj <- prep$lmSumObj
+    
+    # We get r by computing eta^2 and sqrt()
+    fval <- (lmSumObj$coefficients[param,'t value']) ^ 2
+    rdf <- lmSumObj$df[2]
+    rVal <- sqrt(fval/(fval+rdf))
   } else {
     rVal <- r
   }
   
   # Make a string
-  #browser()
-  if (nrow(lmSumObj$coefficients) > 2) {
-    baseStr <- paste0('r_p(', rdf, ')=',
-                      formatC(rVal, digits=digits, format='f')
-    )
-  } else {
-    baseStr <- paste0('r(', rdf, ')=',
-                      formatC(rVal, digits=digits, format='f')
-    )
-  }
+  str <- rStr(rVal, rdf, length(lmSumObj$coefficients[,'Estimate']) > 2)
   
+  return(str)
+}
+
+rStrFromRcorr <- function (rcorrObj, var1, var2, ...) {
+  #' Constructs an APA formatted string for a correlation, but from lm().
+  #' 
+  #' @param param The parameter of interest. Can be "int" as a shortcut 
+  #' for "(Intercept)".
+  #' @param modObj Either an \code{lm} or \code{summary.lm} (faster) object.
+  #' @param ... Options.
+  #' @export rStr
   
-  if (asEqn) {
-    str <- paste0('$', baseStr, '$')
-  } else {
-    str <- baseStr
-  }
+  # Get options
+  getOpts(...)
+  
+  rVal <- rcorrObj$r[var1, var2]
+  rdf <- rcorrObj$n[var1, var2] - 2
+  
+  # Make a string
+  str <- rStr(rVal, rdf)
   
   return(str)
 }
@@ -694,7 +762,7 @@ printStats <- function (param, modObj, asCor = F, ...) {
   
   fnNms <- list(
     b=betaStr,
-    r=rStr,
+    r=rStrFromLm,
     f=fStrFromLm,
     t=tStr,
     p=pStrFromLm,
