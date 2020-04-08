@@ -100,7 +100,7 @@ strNoLeadZero <- function (val, digits=3) {
   #' 
   #' @return A character string.
   #' 
-  #' @export stringNoLeadZero
+  #' @export strNoLeadZero
   
   # We have to construct our own string to omit leading zeros
   #browser()
